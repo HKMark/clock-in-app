@@ -1,1 +1,64 @@
-<div>clock in</div>
+<div class="container-md">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-5">
+        <div class="card-body">
+          <h5>個人資料</h5>
+          <br>
+          <p><strong>姓名: {{user.name}}</strong></p>
+          <p>Email: {{user.email}}</p>
+          <p>員工編號: {{user.employeeId}}</p>
+          <p>職稱: {{user.jobTitle}}</p>
+          <p>所屬部門: {{user.department}}</p>
+          <p>工作地址: {{user.workAddress}}</p>
+          <br>
+          <a class="btn btn-outline-primary" href="/users/{{user.id}}/edit">更改帳號密碼</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card mb-5">
+        <div class="card-header">
+          現在時間
+        </div>
+        <div class="card-body">
+          <strong><p id="current-time"></p></strong>
+          <a class="btn btn-outline-primary" href="/users/{{user.id}}/clock-in">立即打卡</a>
+        </div>
+      </div>
+      <div class="card mb-5">
+        <div class="card-header">
+          今天的打卡紀錄
+        </div>
+        <div class="card-body">
+
+        </div>
+      </div>
+      <div class="card mb-5">
+        <div class="card-header">
+          過去的紀錄
+        </div>
+        <div class="card-body">
+          {{> records-tabs route='attendances'}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const date = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const currentTime = `${year}年${month}月${date}日 ${hours}:${minutes}:${seconds}`;
+    document.getElementById('current-time').innerText = currentTime;
+  }
+
+  setInterval(updateTime, 1000);
+  updateTime();
+</script>

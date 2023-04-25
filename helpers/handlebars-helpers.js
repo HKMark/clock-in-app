@@ -9,5 +9,8 @@ Handlebars.registerHelper('isEqual', function (value1, value2, options) {
 })
 
 module.exports = {
-  currentYear: () => dayjs().year()
+  currentYear: () => dayjs().year(),
+  ifCond: function (a, b, options) {
+    return a === b ? options.fn(this) : options.inverse(this)
+  }
 }
