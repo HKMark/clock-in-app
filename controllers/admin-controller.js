@@ -3,8 +3,8 @@ const db = require('../models')
 const { User } = db
 
 const adminController = {
-  getClockIns: (req, res) => {
-    return res.render('admin/clock-ins')
+  getAttendances: (req, res) => {
+    return res.render('admin/attendances')
   },
   signUpPage: (req, res) => {
     res.render('admin/signup')
@@ -28,7 +28,7 @@ const adminController = {
       }))
       .then(() => {
         req.flash('success_messages', '成功建立帳號！')
-        res.redirect('admin/clock-ins')
+        res.redirect('admin/attendances')
       })
       .catch(err => next(err))
   }
