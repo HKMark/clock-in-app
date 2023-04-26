@@ -1,6 +1,5 @@
+const { User } = require('../models')
 const bcrypt = require('bcryptjs')
-const db = require('../models')
-const { User } = db
 
 const adminController = {
   getAttendances: (req, res) => {

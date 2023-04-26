@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ClockRecord',
-    tableName: 'Clock_records',
+    tableName: 'ClockRecords',
     underscored: true
   })
   return ClockRecord

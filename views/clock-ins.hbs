@@ -23,7 +23,10 @@
         </div>
         <div class="card-body">
           <strong><p id="current-time"></p></strong>
-          <a class="btn btn-outline-primary" href="/users/{{user.id}}/clock-in">立即打卡</a>
+          {{!-- <a class="btn btn-outline-primary" href="/users/{{user.id}}/clock-in">立即打卡</a> --}}
+          <form id="post-form" action="/users/{{user.id}}/clock-in" method="POST">
+            <button type="submit" class="btn btn-outline-primary">立即打卡</button>
+          </form>
         </div>
       </div>
       <div class="card mb-5">
