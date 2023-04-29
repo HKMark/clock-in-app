@@ -2,6 +2,8 @@ const { ClockRecord } = require('../models')
 const { Op } = require('sequelize')
 const dayjs = require('dayjs')
 const axios = require('axios')
+const customParseFormat = require('dayjs/plugin/customParseFormat')
+dayjs.extend(customParseFormat)
 
 async function isWorkingDay (date) {
   const apiUrl = 'https://data.ntpc.gov.tw/api/datasets/308DCD75-6434-45BC-A95F-584DA4FED251/json?page=1&size=1000'
@@ -11,24 +13,12 @@ async function isWorkingDay (date) {
   return !holidays.includes(dayjs(date).format('YYYY-MM-DD')) && dayjs(date).day() !== 0 && dayjs(date).day() !== 6
 }
 
-const userController = {
-  signInPage: (req, res) => {
-    res.render('signin')
-  },
-  signIn: (req, res) => {
-    req.flash('success_messages', '成功登入！')
-    res.redirect('/clock-ins')
-  },
-  logout: (req, res) => {
-    req.flash('success_messages', '登出成功！')
-    req.logout()
-    res.redirect('/signin')
-  },
+const clockInController = {
   getClockIns: (req, res) => {
     return res.render('clock-ins')
   },
   addClockIn: async (req, res) => {
-    const currentTime = dayjs()
+    const currentTime = dayjs().add(8, 'hour')
     const today = currentTime.startOf('day')
 
     try {
@@ -71,4 +61,4 @@ const userController = {
   }
 }
 
-module.exports = userController
+module.exports = clockInController
