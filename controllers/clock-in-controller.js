@@ -1,4 +1,4 @@
-const { ClockRecord } = require('../models')
+const { ClockRecord, Attendance } = require('../models')
 const { Op } = require('sequelize')
 const dayjs = require('dayjs')
 const axios = require('axios')
@@ -14,47 +14,103 @@ async function isWorkingDay (date) {
 }
 
 const clockInController = {
-  getClockIns: (req, res) => {
-    return res.render('clock-ins')
+  getClockIns: async (req, res) => {
+    const attendances = await Attendance.findAll({
+      where: { userId: req.user.id },
+      order: [['date', 'DESC']]
+    })
+
+    const formattedAttendances = attendances.map(attendance => {
+      const date = dayjs(attendance.date).format('YYYY年M月D日')
+      const clockInTime = dayjs(attendance.clockInTime).subtract(8, 'hour').format('HH:mm:ss')
+      const clockOutTime = dayjs(attendance.clockOutTime).subtract(8, 'hour').format('HH:mm:ss')
+
+      return {
+        ...attendance.toJSON(),
+        date,
+        clockInTime,
+        clockOutTime
+      }
+    })
+
+    console.log(formattedAttendances)
+    return res.render('clock-ins', { attendances: formattedAttendances })
   },
   addClockIn: async (req, res) => {
     const currentTime = dayjs().add(8, 'hour')
-    const today = currentTime.startOf('day')
+
+    if (!(await isWorkingDay(currentTime))) {
+      req.flash('error_messages', '非工作日無法打卡')
+      return res.redirect('back')
+    }
 
     try {
-      if (await isWorkingDay(today)) {
-        const tomorrow = today.add(1, 'day')
+      const today = currentTime.startOf('day')
+      const tomorrow = today.add(1, 'day')
 
-        const existingRecords = await ClockRecord.findAll({
-          where: {
-            userId: req.user.id,
-            time: {
-              [Op.between]: [today.toISOString(), tomorrow.toISOString()]
-            }
-          },
-          order: [['time', 'ASC']]
-        })
+      const existingRecords = await ClockRecord.findAll({
+        where: {
+          userId: req.user.id,
+          time: {
+            [Op.between]: [today.toISOString(), tomorrow.toISOString()]
+          }
+        },
+        order: [['time', 'ASC']]
+      })
 
-        let recordType
+      let recordType
 
-        if (existingRecords.length === 0) {
-          recordType = '上班打卡'
+      if (existingRecords.length === 0) {
+        recordType = '上班打卡'
+      } else {
+        recordType = '下班打卡'
+      }
+
+      await ClockRecord.create({
+        userId: req.user.id,
+        time: currentTime.toISOString(),
+        recordType: recordType
+      })
+
+      if (recordType === '下班打卡') {
+        const clockInTime = existingRecords[0].time
+        const clockOutTime = currentTime
+        const workingHours = clockOutTime.diff(clockInTime, 'hour')
+
+        let status
+        if (workingHours >= 8) {
+          status = '確認出勤'
         } else {
-          recordType = '下班打卡'
+          status = '缺勤'
         }
 
-        await ClockRecord.create({
-          userId: req.user.id,
-          time: currentTime.toISOString(),
-          recordType: recordType
+        const attendance = await Attendance.findOne({
+          where: {
+            userId: req.user.id,
+            date: today.toISOString()
+          }
         })
 
-        req.flash('success_messages', '打卡成功')
-        res.redirect('back')
-      } else {
-        req.flash('error_messages', '非工作日無法打卡')
-        res.redirect('back')
+        if (attendance) {
+          await attendance.update({
+            clockInTime: clockInTime.toISOString(),
+            clockOutTime: clockOutTime.toISOString(),
+            workingHours: workingHours,
+            status: status
+          })
+        } else {
+          await Attendance.create({
+            date: today.toISOString(),
+            clockInTime: clockInTime.toISOString(),
+            clockOutTime: clockOutTime.toISOString(),
+            workingHours: workingHours,
+            status: status,
+            userId: req.user.id
+          })
+        }
       }
+      req.flash('success_messages', '打卡成功')
+      res.redirect('back')
     } catch (error) {
       console.log('error')
     }

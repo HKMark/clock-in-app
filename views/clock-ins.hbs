@@ -46,14 +46,16 @@
               </tr>
             </thead>
             <tbody>
+              {{#each attendances}}
               <tr>
-                <th scope="row">2023-04-30</th>
-                <td>09:00:00</td>
-                <td>18:00:00</td>
-                <td>9小時</td>
-                <td>確認出勤</td>
-                <td></td>
+                <th scope="row">{{date}}</th>
+                <td>{{clockInTime}}</td>
+                <td>{{clockOutTime}}</td>
+                <td>{{workingHours}}小時</td>
+                <td>{{status}}</td>
+                <td>{{remark}}</td>
               </tr>
+              {{/each}}
             </tbody>
           </table>
         </div>
