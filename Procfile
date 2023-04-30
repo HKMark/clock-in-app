@@ -1,1 +1,1 @@
-web: NODE_ENV=production node app.js
+web: env TZ='Asia/Taipei' NODE_ENV=production node app.js
