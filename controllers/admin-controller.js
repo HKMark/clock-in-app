@@ -27,7 +27,7 @@ const adminController = {
       }))
       .then(() => {
         req.flash('success_messages', '成功建立帳號！')
-        res.redirect('/admin')
+        res.redirect('/clock-ins')
       })
       .catch(err => next(err))
   }
