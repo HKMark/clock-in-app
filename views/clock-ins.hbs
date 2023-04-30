@@ -19,7 +19,7 @@
     <div class="col-md-8">
       <div class="card mb-5">
         <div class="card-header">
-          打卡系統時間 (29 小時制)
+          打卡系統時間
         </div>
         <div class="card-body">
           <strong><p id="current-time"></p></strong>
@@ -67,25 +67,12 @@
 <script>
   function updateTime() {
     const now = new Date();
-    let year = now.getFullYear();
-    let month = (now.getMonth() + 1).toString().padStart(2, '0');
-    let date = now.getDate().toString().padStart(2, '0');
-    let hours = now.getHours();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const date = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
-
-    // 修改時間為 29 小時制
-    if (hours >= 0 && hours < 5) {
-      hours += 24;
-
-      // 保持前一天的日期
-      now.setDate(now.getDate() - 1);
-      year = now.getFullYear();
-      month = (now.getMonth() + 1).toString().padStart(2, '0');
-      date = now.getDate().toString().padStart(2, '0');
-    }
-    hours = hours.toString().padStart(2, '0');
-
     const currentTime = `${year}年${month}月${date}日 ${hours}:${minutes}:${seconds}`;
     document.getElementById('current-time').innerText = currentTime;
   }

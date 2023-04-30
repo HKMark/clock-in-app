@@ -10,7 +10,7 @@ async function isWorkingDay (date) {
   const holidaysData = await axios.get(apiUrl)
   const holidays = holidaysData.data.map(holiday => holiday.date)
 
-  return !holidays.includes(dayjs(date).format('YYYY-MM-DD')) && dayjs(date).day() !== 0 && dayjs(date).day() !== 6
+  return !holidays.includes(dayjs(date).format('YYYY-MM-DD')) && dayjs(date).day() !== 0 && dayjs(date).day() !== 5
 }
 
 const clockInController = {
@@ -22,8 +22,8 @@ const clockInController = {
 
     const formattedAttendances = attendances.map(attendance => {
       const date = dayjs(attendance.date).format('YYYY年M月D日')
-      const clockInTime = dayjs(attendance.clockInTime).subtract(8, 'hour').format('HH:mm:ss')
-      const clockOutTime = dayjs(attendance.clockOutTime).subtract(8, 'hour').format('HH:mm:ss')
+      const clockInTime = dayjs(attendance.clockInTime).format('YYYY年M月D日 HH:mm:ss')
+      const clockOutTime = dayjs(attendance.clockOutTime).format('YYYY年M月D日 HH:mm:ss')
 
       return {
         ...attendance.toJSON(),
@@ -37,7 +37,7 @@ const clockInController = {
     return res.render('clock-ins', { attendances: formattedAttendances })
   },
   addClockIn: async (req, res) => {
-    const currentTime = dayjs().add(8, 'hour')
+    const currentTime = dayjs()
 
     if (!(await isWorkingDay(currentTime))) {
       req.flash('error_messages', '非工作日無法打卡')
@@ -45,7 +45,8 @@ const clockInController = {
     }
 
     try {
-      const today = currentTime.startOf('day')
+      const adjustedCurrentTime = currentTime.subtract(5, 'hour')
+      const today = adjustedCurrentTime.startOf('day').add(5, 'hour')
       const tomorrow = today.add(1, 'day')
 
       const existingRecords = await ClockRecord.findAll({
@@ -73,15 +74,19 @@ const clockInController = {
       })
 
       if (recordType === '下班打卡') {
-        const clockInTime = existingRecords[0].time
+        const clockInTime = dayjs(existingRecords[0].time)
         const clockOutTime = currentTime
-        const workingHours = clockOutTime.diff(clockInTime, 'hour')
+        let workingHours = clockOutTime.diff(clockInTime, 'hour', true).toFixed(2)
+
+        if (clockOutTime.date() !== clockInTime.date()) {
+          workingHours = (clockOutTime.hour() + 24 - clockInTime.hour() + (clockOutTime.minute() - clockInTime.minute()) / 60).toFixed(2)
+        }
 
         let status
         if (workingHours >= 8) {
           status = '確認出勤'
         } else {
-          status = '缺勤'
+          status = '缺勤(工作時數暫未滿8小時)'
         }
 
         const attendance = await Attendance.findOne({
