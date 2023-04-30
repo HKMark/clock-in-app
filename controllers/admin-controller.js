@@ -2,8 +2,8 @@ const { User } = require('../models')
 const bcrypt = require('bcryptjs')
 
 const adminController = {
-  getAttendances: (req, res) => {
-    return res.render('admin/attendances')
+  getConfigurations: (req, res) => {
+    return res.render('admin/configurations')
   },
   signUpPage: (req, res) => {
     res.render('admin/signup')

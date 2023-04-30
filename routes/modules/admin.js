@@ -7,8 +7,8 @@ const { generalErrorHandler } = require('../../middleware/error-handler')
 router.get('/signup', authenticatedAdmin, adminController.signUpPage)
 router.post('/signup', authenticatedAdmin, adminController.signUp)
 
-router.get('/attendances', authenticatedAdmin, adminController.getAttendances)
-router.get('/', (req, res) => res.redirect('/admin/attendances'))
+router.get('/configurations', authenticatedAdmin, adminController.getConfigurations)
+router.get('/', (req, res) => res.redirect('/admin/configurations'))
 
 router.use('/', generalErrorHandler)
 
