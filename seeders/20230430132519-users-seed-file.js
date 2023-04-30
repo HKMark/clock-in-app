@@ -1,31 +1,45 @@
 'use strict'
 const bcrypt = require('bcryptjs')
 
-const SEED_USER = {
-  name: 'root',
-  email: 'root@example.com',
-  password: 'acuser',
-  account_role: 'admin',
-  employee_id: 1,
-  job_title: 'Manager',
-  department: 'CEO Office',
-  work_address: 'Taipei 101'
-}
+const SEED_USERS = [
+  {
+    name: 'root',
+    email: 'root@example.com',
+    password: 'acuser',
+    account_role: 'admin',
+    employee_id: 1,
+    job_title: 'Manager',
+    department: 'CEO Office',
+    work_address: 'Taipei 101'
+  },
+  {
+    name: 'user1',
+    email: 'user1@example.com',
+    password: 'acuser',
+    account_role: 'user',
+    employee_id: 2,
+    job_title: 'Assistant',
+    department: 'CEO Office',
+    work_address: 'Taipei 101'
+  }
+]
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkInsert('Users', [{
-      name: SEED_USER.name,
-      email: SEED_USER.email,
-      password: await bcrypt.hash(SEED_USER.password, 10),
-      account_role: SEED_USER.account_role,
-      employee_id: SEED_USER.employee_id,
-      job_title: SEED_USER.job_title,
-      department: SEED_USER.department,
-      work_address: SEED_USER.work_address,
+    const users = await Promise.all(SEED_USERS.map(async user => ({
+      name: user.name,
+      email: user.email,
+      password: await bcrypt.hash(user.password, 10),
+      account_role: user.account_role,
+      employee_id: user.employee_id,
+      job_title: user.job_title,
+      department: user.department,
+      work_address: user.work_address,
       created_at: new Date(),
       updated_at: new Date()
-    }], {})
+    })))
+
+    await queryInterface.bulkInsert('Users', users, {})
   },
 
   down: async (queryInterface, Sequelize) => {
