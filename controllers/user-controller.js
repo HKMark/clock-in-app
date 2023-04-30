@@ -1,15 +1,5 @@
-const { ClockRecord } = require('../models')
-const { Op } = require('sequelize')
-const dayjs = require('dayjs')
-const axios = require('axios')
-
-async function isWorkingDay (date) {
-  const apiUrl = 'https://data.ntpc.gov.tw/api/datasets/308DCD75-6434-45BC-A95F-584DA4FED251/json?page=1&size=1000'
-  const holidaysData = await axios.get(apiUrl)
-  const holidays = holidaysData.data.map(holiday => holiday.date)
-
-  return !holidays.includes(dayjs(date).format('YYYY-MM-DD')) && dayjs(date).day() !== 0 && dayjs(date).day() !== 6
-}
+const { User } = require('../models')
+const bcrypt = require('bcryptjs')
 
 const userController = {
   signInPage: (req, res) => {
@@ -24,50 +14,30 @@ const userController = {
     req.logout()
     res.redirect('/signin')
   },
-  getClockIns: (req, res) => {
-    return res.render('clock-ins')
+  editUser: (req, res, next) => {
+    return User.findByPk(req.params.id, { raw: true })
+      .then(user => {
+        if (!user) throw new Error("User didn't exist!")
+        return res.render('users/edit', { user })
+      })
+      .catch(err => next(err))
   },
-  addClockIn: async (req, res) => {
-    const currentTime = dayjs()
-    const today = currentTime.startOf('day')
-
-    try {
-      if (await isWorkingDay(today)) {
-        const tomorrow = today.add(1, 'day')
-
-        const existingRecords = await ClockRecord.findAll({
-          where: {
-            userId: req.user.id,
-            time: {
-              [Op.between]: [today.toISOString(), tomorrow.toISOString()]
-            }
-          },
-          order: [['time', 'ASC']]
-        })
-
-        let recordType
-
-        if (existingRecords.length === 0) {
-          recordType = '上班打卡'
-        } else {
-          recordType = '下班打卡'
-        }
-
-        await ClockRecord.create({
-          userId: req.user.id,
-          time: currentTime.toISOString(),
-          recordType: recordType
-        })
-
-        req.flash('success_messages', '打卡成功')
+  putUser: (req, res, next) => {
+    const { password, passwordCheck } = req.body
+    if (!password.trim() || !passwordCheck.trim()) throw new Error('欄位不得為空白!')
+    if (password !== passwordCheck) throw new Error('密碼與確認密碼不相符!')
+    return bcrypt.genSalt(10)
+      .then(salt => {
+        return Promise.all([bcrypt.hash(password, salt), User.findByPk(req.user.id)])
+      })
+      .then(([hash, user]) => {
+        return user.update({ password: hash })
+      })
+      .then(() => {
+        req.flash('success_messages', '更換密碼成功！')
         res.redirect('back')
-      } else {
-        req.flash('error_messages', '非工作日無法打卡')
-        res.redirect('back')
-      }
-    } catch (error) {
-      console.log('error')
-    }
+      })
+      .catch(err => next(err))
   }
 }
 

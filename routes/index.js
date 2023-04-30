@@ -16,6 +16,9 @@ router.get('/logout', userController.logout)
 router.get('/clock-ins', authenticated, clockInController.getClockIns)
 router.post('/users/:id/clock-in', authenticated, clockInController.addClockIn)
 
+router.get('/users/:id/edit', authenticated, userController.editUser)
+router.put('/users/:id', authenticated, userController.putUser)
+
 router.get('/', (req, res) => res.redirect('/clock-ins'))
 
 router.use('/', generalErrorHandler)

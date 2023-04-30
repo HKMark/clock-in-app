@@ -1,0 +1,14 @@
+<div class="mb-4 text-center">
+  <h1 class="h3 font-weight-normal mb-3">更改帳號密碼</h1>
+</div>
+<form class="form-edit" action="/users/{{user.id}}?_method=PUT" method="POST" style="width: 100%;">
+  <div class="form-row mb-3">
+    <label class="form-label" for="password">新密碼</label>
+    <input type="password" id="password" name="password" class="form-control" placeholder="請設定密碼" required>
+  </div>
+  <div class="form-row mb-3">
+    <label class="form-label" for="passwordCheck">新密碼確認</label>
+    <input type="password" id="passwordCheck" name="passwordCheck" class="form-control" placeholder="請再次輸入密碼" required>
+  </div>
+  <button class="btn btn-primary btn-block" type="submit">更改密碼</button>
+</form>
